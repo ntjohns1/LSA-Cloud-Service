@@ -1,20 +1,25 @@
 package com.noslen.lsaadminservice.controller;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.noslen.lsaadminservice.model.LSAUser;
+import com.noslen.lsaadminservice.repository.LSAUserRepository;
+import com.noslen.lsaadminservice.util.auth.PasswordUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RefreshScope
 public class AdminServiceController {
+    @Autowired
+    private LSAUserRepository userRepository;
 
-    @Value("${officialGreeting}")
-    private String officialGreeting;
-
-    @GetMapping(value="/hello")
-    public String helloCloud() {
-
-        return officialGreeting;
+    @PostMapping("/api/addUser")
+    @ResponseStatus(HttpStatus.CREATED)
+    public LSAUser createCUser(@RequestBody LSAUser user) {
+        PasswordUtil pUtil = new PasswordUtil(user.getPassword());
+        user.setPassword(pUtil.getEncodedPassword());
+        userRepository.save(user);
+        return user;
     }
 }
